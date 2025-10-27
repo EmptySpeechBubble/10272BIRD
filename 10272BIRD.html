@@ -2669,8 +2669,8 @@ function createFlower(x, y) {
             // Check if UFO already exists or on cooldown
             if (ufo || Date.now() < ufoEncounterCooldown) return;
 
-            // Very rare spawn chance (0.5% per check during night)
-            if (Math.random() > 0.005) return;
+            // SUPER RARE spawn chance (0.0002% = once every 2-3 hours at 60fps)
+            if (Math.random() > 0.000002) return;
 
             // Find potential targets
             const potentialTargets = [];
@@ -2978,8 +2978,8 @@ function createFlower(x, y) {
             // Check if already active or on cooldown
             if (meteorShower || Date.now() < specialEventCooldown) return;
 
-            // Very rare spawn chance (0.1% per check)
-            if (Math.random() > 0.001) return;
+            // RARE spawn chance (0.001% = once every 30-40 mins at 60fps)
+            if (Math.random() > 0.00001) return;
 
             // Start meteor shower
             meteorShower = {
@@ -3116,8 +3116,8 @@ function createFlower(x, y) {
             // Check if already active or on cooldown
             if (eclipse || Date.now() < specialEventCooldown) return;
 
-            // Very rare spawn chance (0.05% per check)
-            if (Math.random() > 0.0005) return;
+            // SUPER RARE spawn chance (0.0002% = once every 2-3 hours at 60fps)
+            if (Math.random() > 0.000002) return;
 
             // Start eclipse
             eclipse = {
@@ -15989,17 +15989,17 @@ function drawAnts() {
             }
         }
 
-        // V26: Increased rat spawn rate for better visibility
+        // FIXED: Reduced rat spawn rate for slower, screensaver-like pacing
         // Core gameplay loop: More poop attracts more rats
         function spawnRats() {
             if (rats.length >= MAX_RATS) return;
 
             // Base spawn chance, increased by poop count and maxed food
-            let spawnChance = 0.04; // Base: 4%
+            let spawnChance = 0.015; // REDUCED from 0.04 (4%) to 1.5% for slower pacing
             const poopMultiplier = Math.min(birdPoops.length / 5, 2); // Up to 2x multiplier (caps at 10 poops)
 
             // If food has been maxed out for a while, attract rats strongly
-            const foodMaxMultiplier = foodMaxedOutTimer > FOOD_MAX_RAT_ATTRACTION_TIME ? 3 : 1;
+            const foodMaxMultiplier = foodMaxedOutTimer > FOOD_MAX_RAT_ATTRACTION_TIME ? 2.5 : 1; // Reduced from 3x
 
             spawnChance = spawnChance * (1 + poopMultiplier) * foodMaxMultiplier;
 
@@ -18526,7 +18526,8 @@ if (antHill) {
             if (Math.random() < 0.1) {
                 // Spawn at random X position on ground level
                 const birdhouseX = 100 + Math.random() * (canvas.width - 200);
-                const birdhouseY = canvas.height * GROUND_HEIGHT_RATIO - 20; // Ground level
+                // FIXED: Base should be AT ground level so pole extends into grass
+                const birdhouseY = canvas.height * GROUND_HEIGHT_RATIO + 10; // Base in grass
 
                 const birdhouse = new Birdhouse(birdhouseX, birdhouseY);
                 birdhouse.materialsCollected = BIRDHOUSE_MATERIALS_NEEDED; // Fully built
@@ -19019,8 +19020,9 @@ if (toggleMushroom) {
                 // Pick random valid position
                 if (validSpaces.length > 0) {
                     const x = validSpaces[Math.floor(Math.random() * validSpaces.length)];
-                    const y = canvas.height * GROUND_HEIGHT_RATIO;
-                    
+                    // FIXED: Base should be in grass so pole extends properly
+                    const y = canvas.height * GROUND_HEIGHT_RATIO + 10;
+
                     const newBirdhouse = new Birdhouse(x, y);
                     // CHANGE THIS LINE (make it incomplete so birds can build it):
                     newBirdhouse.isComplete = false; // Was true, now false
