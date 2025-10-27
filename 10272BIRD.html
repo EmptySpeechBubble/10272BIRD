@@ -17926,6 +17926,11 @@ if (mushroomMode) {
     // Draw the sky background with day/night changes (unaffected by camera)
     drawSky();
 
+    // FIXED: Draw migration in far background (before camera transform)
+    attemptMigrationWave();
+    updateMigrationWave(deltaTime);
+    drawMigrationWave();
+
     // Save context and apply camera transformations
     ctx.save();
     ctx.translate(cameraOffsetX, cameraOffsetY);
@@ -18090,9 +18095,7 @@ drawBirdTrails();
     updateEclipse(deltaTime);
     drawEclipse();
 
-    attemptMigrationWave();
-    updateMigrationWave(deltaTime);
-    drawMigrationWave();
+    // Migration wave moved to background layer (after drawSky)
 
 // Update and draw gameboy
 updateGameboy(deltaTime);
