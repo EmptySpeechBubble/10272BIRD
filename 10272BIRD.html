@@ -6439,6 +6439,11 @@ function drawWorms() {
                 let isInPond = false;
                 let adjustedAngle = twig.angle;
 
+                // Initialize float phase if not present
+                if (!twig.floatPhase) {
+                    twig.floatPhase = Math.random() * Math.PI * 2;
+                }
+
                 for (const pond of ponds) {
                     const distToPond = Math.sqrt(
                         Math.pow(twig.x - pond.x, 2) +
@@ -6452,8 +6457,15 @@ function drawWorms() {
                     }
                 }
 
+                // FIXED: Gentle floating animation for branches on pond
+                let floatOffsetY = 0;
+                if (isInPond) {
+                    twig.floatPhase += 0.002; // MUCH slower phase increment
+                    floatOffsetY = Math.sin(twig.floatPhase) * 1.5; // Gentle 1.5px bobbing
+                }
+
                 ctx.save();
-                ctx.translate(twig.x, twig.y);
+                ctx.translate(twig.x, twig.y + floatOffsetY);
                 ctx.rotate(adjustedAngle);
 
                 // Draw branch - color differently if it's a special twig
@@ -6663,26 +6675,28 @@ function drawWorms() {
                     for (let i = 0; i < branchCount; i++) {
                         // Determine which side the branch comes out on
                         const isRightSide = Math.random() > 0.5;
-                        
-                        // CORRECTLY POINTING UP
+
+                        // FIXED: More angle variations for natural look
                         let branchAngle;
-                        
+
                         if (isRightSide) {
-                            // Right side branches point up and right (-π/4 to -π/2) 
-                            branchAngle = -Math.PI/4 - Math.random() * (Math.PI/4);
+                            // Right side branches - MORE variation (-π/6 to -3π/4)
+                            branchAngle = -Math.PI/6 - Math.random() * (7*Math.PI/12);
                         } else {
-                            // Left side branches point up and left (5π/4 to 3π/2)
-                            branchAngle = (5 * Math.PI)/4 + Math.random() * (Math.PI/4);
+                            // Left side branches - MORE variation (7π/6 to 11π/6)
+                            branchAngle = (7 * Math.PI)/6 + Math.random() * (2*Math.PI/3);
                         }
-                        
+
                         // Vary height more naturally along the trunk
                         const heightPosition = 0.3 + Math.random() * 0.6; // 30% to 90% up the trunk
-                        
+
                         this.branches.push({
                             height: this.trunkHeight * heightPosition,
-                            length: 30 + Math.random() * 40,
+                            // FIXED: More length variation (20-80 instead of 30-70)
+                            length: 20 + Math.random() * 60,
                             angle: branchAngle,
-                            thickness: this.trunkWidth * (0.3 + Math.random() * 0.3)
+                            // FIXED: More thickness variation (0.2-0.7x instead of 0.3-0.6x)
+                            thickness: this.trunkWidth * (0.2 + Math.random() * 0.5)
                         });
                     }
                 }
