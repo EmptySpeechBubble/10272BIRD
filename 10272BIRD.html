@@ -2818,8 +2818,8 @@ function createFlower(x, y) {
                     target.entity.giantUntil = Date.now() + (3 * dayNightDuration); // Giant for 3 days
                     target.entity.glowing = true; // Permanently glowing
                     target.entity.glowPhase = Math.random() * Math.PI * 2;
-                    target.entity.size = 8; // Make it much larger
-                    debugLog('Ant transformed into giant glowing ant by UFO!');
+                    target.entity.size = 12; // FIXED: 3x bigger (normal is ~4 units)
+                    debugLog('Ant transformed into GIANT glowing ant by UFO!');
                     break;
             }
         }
@@ -3179,7 +3179,8 @@ function createFlower(x, y) {
             } else {
                 ctx.fillStyle = `rgba(0, 0, 20, ${eclipse.darkness * 0.6})`;
             }
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // FIXED: Extended darkness area to account for camera movement
+            ctx.fillRect(-canvas.width, -canvas.height, canvas.width * 3, canvas.height * 3);
 
             // Draw eclipse if in totality
             if (eclipse.phase === 1) {
@@ -4842,40 +4843,43 @@ currentHour = Math.floor(((timeOfDay < 1 ? timeOfDay * 12 : 12 + (timeOfDay - 1)
                 ctx.globalAlpha = 1;
             }
 
-            // Draw sun or moon
-            if (timeOfDay < 1 && cloudCover < 0.7) {
-                // Sun
-                const sunX = canvas.width * 0.8;
-                const sunY = canvas.height * 0.2;
-                const sunRadius = 30;
-                
-                // Adjust sun glow based on cloud cover
-                const sunOpacity = 1 - cloudCover;
-                
-                // Sun glow
-                const gradient = ctx.createRadialGradient(
-                    sunX, sunY, sunRadius * 0.5,
-                    sunX, sunY, sunRadius * 2
-                );
-                gradient.addColorStop(0, `rgba(255, 255, 0, ${sunOpacity})`);
-                gradient.addColorStop(1, `rgba(255, 255, 0, 0)`);
-                
-                ctx.fillStyle = gradient;
-                ctx.beginPath();
-                ctx.arc(sunX, sunY, sunRadius * 2, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Sun core
-                ctx.fillStyle = `rgba(255, 255, 0, ${sunOpacity})`;
-                ctx.beginPath();
-                ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
-                ctx.fill();
-            } else if (timeOfDay >= 1 && cloudCover < 0.7) {
-                // Moon
-                ctx.fillStyle = `rgba(220, 220, 220, ${0.8 - cloudCover})`;
-                ctx.beginPath();
-                ctx.arc(canvas.width * 0.2, canvas.height * 0.2, 25, 0, Math.PI * 2);
-                ctx.fill();
+            // FIXED: Hide sun/moon during eclipse
+            if (!eclipse) {
+                // Draw sun or moon
+                if (timeOfDay < 1 && cloudCover < 0.7) {
+                    // Sun
+                    const sunX = canvas.width * 0.8;
+                    const sunY = canvas.height * 0.2;
+                    const sunRadius = 30;
+
+                    // Adjust sun glow based on cloud cover
+                    const sunOpacity = 1 - cloudCover;
+
+                    // Sun glow
+                    const gradient = ctx.createRadialGradient(
+                        sunX, sunY, sunRadius * 0.5,
+                        sunX, sunY, sunRadius * 2
+                    );
+                    gradient.addColorStop(0, `rgba(255, 255, 0, ${sunOpacity})`);
+                    gradient.addColorStop(1, `rgba(255, 255, 0, 0)`);
+
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.arc(sunX, sunY, sunRadius * 2, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Sun core
+                    ctx.fillStyle = `rgba(255, 255, 0, ${sunOpacity})`;
+                    ctx.beginPath();
+                    ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (timeOfDay >= 1 && cloudCover < 0.7) {
+                    // Moon
+                    ctx.fillStyle = `rgba(220, 220, 220, ${0.8 - cloudCover})`;
+                    ctx.beginPath();
+                    ctx.arc(canvas.width * 0.2, canvas.height * 0.2, 25, 0, Math.PI * 2);
+                    ctx.fill();
+                }
             }
             
             // Draw cloud cover if present
@@ -7223,8 +7227,28 @@ if (timeOfDay < 1 && Math.random() < 0.001) {
                 { name: 'Rose', bodyColor: '#FF69B4', wingColor: '#FF1493' },
                 { name: 'Emerald', bodyColor: '#50C878', wingColor: '#2E8B57' }
             ];
-            this.rareVariant = rareVariants[Math.floor(Math.random() * rareVariants.length)];
-            debugLog(`Rare ${this.rareVariant.name} ${this.birdType.name} spawned!`);
+
+            // FIXED: Super rare combo birds (20% of rare birds = 1% overall)
+            const isCombo = Math.random() < 0.2;
+            if (isCombo) {
+                // Mix body from one variant, wings/head from another
+                const bodyVariant = rareVariants[Math.floor(Math.random() * rareVariants.length)];
+                let wingVariant = rareVariants[Math.floor(Math.random() * rareVariants.length)];
+                // Ensure different variants
+                while (wingVariant.name === bodyVariant.name) {
+                    wingVariant = rareVariants[Math.floor(Math.random() * rareVariants.length)];
+                }
+                this.rareVariant = {
+                    name: `Rare ${bodyVariant.name}-${wingVariant.name}`,
+                    bodyColor: bodyVariant.bodyColor,
+                    wingColor: wingVariant.wingColor
+                };
+                debugLog(`✨ SUPER RARE ${this.rareVariant.name} ${this.birdType.name} spawned!`);
+            } else {
+                // Standard rare variant
+                this.rareVariant = rareVariants[Math.floor(Math.random() * rareVariants.length)];
+                debugLog(`Rare ${this.rareVariant.name} ${this.birdType.name} spawned!`);
+            }
         }
 
         this.x = startX !== null ? startX : Math.random() * canvas.width;
